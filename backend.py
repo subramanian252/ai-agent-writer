@@ -7,7 +7,6 @@ from typing import Annotated, Literal, Optional, TypedDict
 
 import requests
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from langchain_tavily import TavilySearch
@@ -101,6 +100,7 @@ class State(TypedDict, total=False):
     md_with_placeholders: str
     image_specs: list[dict]
     final: str
+    output_path: str
 
 
 ROUTER_SYSTEM = """You route a technical blog-writing request.
@@ -363,25 +363,10 @@ def build_workflow():
 
 
 workflow = build_workflow()
-api = FastAPI(title="AI Writer Backend")
-app = api
 
 
-class BlogRequest(BaseModel):
-    topic: str
-    thread_id: str = "default"
-
-
-@api.post("/generate")
-def generate_blog(request: BlogRequest):
-    try:
-        result = workflow.invoke(
-            {"topic": request.topic, "sections": []},
-            config={"configurable": {"thread_id": request.thread_id}},
-        )
-        return {
-            "markdown": result.get("final", ""),
-            "output_path": result.get("output_path"),
-        }
-    except Exception as error:
-        raise HTTPException(status_code=500, detail=str(error)) from error
+def generate_blog(topic: str, thread_id: str) -> dict:
+    return workflow.invoke(
+        {"topic": topic, "sections": []},
+        config={"configurable": {"thread_id": thread_id}},
+    )
