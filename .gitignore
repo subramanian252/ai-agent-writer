@@ -13,8 +13,7 @@ venv/
 env/
 
 # Local configuration and API keys; keep shareable examples
-.env
-.env.*
+.env*
 !.env.example
 !.env.sample
 
@@ -28,7 +27,7 @@ env/
 /outputs/
 
 # Local Vercel project metadata
-/.vercel/
+.vercel
 
 # SQLite databases and their journal / write-ahead log files
 # memory.py can also create checkpointer.db outside data/

@@ -121,7 +121,8 @@ section."""
 IMAGE_SYSTEM = """You are an expert technical editor.
 Choose at most three images that materially improve the article.
 For every image, section_title must exactly match one existing Markdown ## heading.
-Copy that heading verbatim, including capitalization and punctuation.
+Copy only the heading text verbatim, including capitalization and punctuation.
+Do not include the leading ## Markdown prefix in section_title.
 Insert each placeholder in the matching section and return strictly GlobalImagePlan.
 If no image is useful, return the original Markdown and images=[]."""
 
@@ -216,6 +217,10 @@ def merge_content(state: State) -> dict:
     return {"merged_md": f"# {state['plan'].blog_title}\n\n{'\n\n'.join(ordered_sections).strip()}\n"}
 
 
+def normalize_section_title(title: str) -> str:
+    return re.sub(r"^\s*#{1,6}\s*", "", title).strip()
+
+
 def decide_images(state: State) -> dict:
     merged_md = state["merged_md"]
     headings = re.findall(r"^##\s+(.+?)\s*$", merged_md, flags=re.MULTILINE)
@@ -228,14 +233,20 @@ def decide_images(state: State) -> dict:
         )),
     ])
     valid_headings = set(headings)
+    image_specs = []
     for image in image_plan.images:
-        if image.section_title not in valid_headings:
+        section_title = normalize_section_title(image.section_title)
+        if section_title not in valid_headings:
             raise ValueError(
                 f"Invalid section title: {image.section_title!r}; expected one of {headings!r}"
             )
+        image_spec = image.model_dump()
+        image_spec["section_title"] = section_title
+        image_specs.append(image_spec)
+
     return {
         "md_with_placeholders": image_plan.md_with_placeholders,
-        "image_specs": [image.model_dump() for image in image_plan.images],
+        "image_specs": image_specs,
     }
 
 
