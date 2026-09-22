@@ -3,57 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="An agentic research and technical writing workflow built with LangGraph, FastAPI, and OpenRouter.">
-    <title>Agent Writer — Subramanian</title>
+    <meta name="description" content="LazyWriter is a tiny AI newsroom that researches, writes, illustrates, and packages polished Markdown articles.">
+    <meta name="theme-color" content="#f7f0db">
+    <title>LazyWriter — a tiny AI newsroom</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Caveat:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Caveat:wght@600;700&family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #08090b;
-            --panel: #0c0e11;
-            --panel-raised: #111317;
-            --line: rgba(255, 255, 255, 0.1);
-            --line-strong: rgba(255, 255, 255, 0.16);
-            --text: #f4f4f5;
-            --muted: #7f8389;
-            --soft: #c3c5ca;
-            --orange: #ff5722;
-            --orange-light: #ff7043;
-            --orange-dark: #c23800;
-            --success: #55d68b;
-            --danger: #ff6b5f;
+            --ink: #253127;
+            --ink-soft: #526052;
+            --muted: #788070;
+            --cream: #f7f0db;
+            --paper: #fffaf0;
+            --peach: #ffd8b7;
+            --coral: #ff7950;
+            --coral-dark: #ad482b;
+            --sage: #b9c49d;
+            --sage-dark: #526b4e;
+            --sky: #b9dcd4;
+            --yellow: #f2c96d;
+            --danger: #a7442b;
+            --line: #253127;
+            --shadow: 7px 7px 0 var(--line);
         }
 
         * { box-sizing: border-box; }
-
-        html { color-scheme: dark; scroll-behavior: smooth; }
+        html { scroll-behavior: smooth; color-scheme: light; }
 
         body {
-            margin: 0;
+            min-width: 320px;
             min-height: 100vh;
+            margin: 0;
+            color: var(--ink);
             background:
-                radial-gradient(circle at 16% 0%, rgba(255, 87, 34, 0.12), transparent 29rem),
-                radial-gradient(circle at 88% 12%, rgba(255, 112, 67, 0.07), transparent 24rem),
-                var(--bg);
-            color: var(--text);
-            font-family: "Space Grotesk", sans-serif;
+                radial-gradient(circle at 8% 4%, rgba(255,121,80,.18) 0 8rem, transparent 8.1rem),
+                radial-gradient(circle at 94% 12%, rgba(185,196,157,.43) 0 10rem, transparent 10.1rem),
+                var(--cream);
+            font-family: "Manrope", sans-serif;
         }
 
         body::before {
             content: "";
             position: fixed;
             inset: 0;
+            z-index: -2;
             pointer-events: none;
-            opacity: 0.18;
-            background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
-            background-size: 48px 48px;
-            mask-image: linear-gradient(to bottom, black, transparent 72%);
+            opacity: .28;
+            background-image:
+                radial-gradient(circle, #9a694f 1px, transparent 1.15px),
+                radial-gradient(circle, #60715b .8px, transparent 1px);
+            background-position: 0 0, 13px 13px;
+            background-size: 26px 26px;
+            mask-image: linear-gradient(to bottom, #000 20%, transparent 94%);
         }
 
         button, textarea { font: inherit; }
-
+        button, a { -webkit-tap-highlight-color: transparent; }
         a { color: inherit; }
+        ::selection { color: var(--ink); background: var(--yellow); }
 
         .sr-only {
             position: absolute;
@@ -68,627 +76,769 @@
         }
 
         .shell {
-            width: min(1480px, calc(100% - 40px));
+            width: min(1460px, calc(100% - 42px));
             margin: 0 auto;
-            padding: 20px 0 48px;
+            padding: 22px 0 36px;
         }
 
         .topbar {
             display: flex;
+            min-height: 56px;
             align-items: center;
             justify-content: space-between;
-            min-height: 52px;
+            gap: 24px;
             margin-bottom: 28px;
         }
 
-        .brand, .portfolio-link {
+        .brand {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             text-decoration: none;
         }
 
         .brand-mark {
+            position: relative;
             display: grid;
-            width: 36px;
-            height: 36px;
+            width: 44px;
+            height: 44px;
             place-items: center;
-            border-radius: 10px;
-            color: #1a0b05;
-            background: linear-gradient(135deg, var(--orange-light), var(--orange-dark));
-            box-shadow: 0 8px 28px rgba(255, 87, 34, 0.28), inset 0 1px rgba(255,255,255,.32);
+            border: 2px solid var(--line);
+            border-radius: 50% 45% 52% 42%;
+            background: var(--coral);
+            box-shadow: 4px 4px 0 var(--line);
+            font: 800 20px "Bricolage Grotesque", sans-serif;
+            transform: rotate(-5deg);
         }
 
-        .brand-copy strong { display: block; font-size: 15px; letter-spacing: -0.02em; }
-        .brand-copy span { display: block; margin-top: 1px; color: var(--muted); font: 11px "JetBrains Mono", monospace; }
+        .brand-mark::before,
+        .brand-mark::after {
+            content: "";
+            position: absolute;
+            top: -8px;
+            width: 2px;
+            height: 9px;
+            border-radius: 2px;
+            background: var(--line);
+            transform-origin: bottom;
+        }
+
+        .brand-mark::before { left: 14px; transform: rotate(-25deg); }
+        .brand-mark::after { right: 13px; transform: rotate(25deg); }
+        .brand-copy strong { display: block; font: 800 20px/1 "Bricolage Grotesque", sans-serif; letter-spacing: -.04em; }
+        .brand-copy span { display: block; margin-top: 4px; color: var(--muted); font: 500 10px "DM Mono", monospace; letter-spacing: .09em; text-transform: uppercase; }
+
+        .top-actions { display: flex; align-items: center; gap: 12px; }
+
+        .system-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            color: var(--sage-dark);
+            font: 500 10px "DM Mono", monospace;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+        }
+
+        .system-status i {
+            width: 8px;
+            height: 8px;
+            border: 1px solid var(--line);
+            border-radius: 50%;
+            background: #86b36f;
+            box-shadow: 0 0 0 4px rgba(134,179,111,.16);
+        }
 
         .portfolio-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
             padding: 9px 13px;
-            border: 1px solid var(--line);
-            border-radius: 999px;
-            color: var(--soft);
-            font-size: 13px;
-            transition: 180ms ease;
+            border: 2px solid var(--line);
+            border-radius: 13px 10px 14px 11px;
+            background: var(--paper);
+            box-shadow: 3px 3px 0 var(--line);
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: transform 160ms ease, box-shadow 160ms ease;
         }
 
-        .portfolio-link:hover { border-color: rgba(255,87,34,.5); color: white; transform: translateY(-1px); }
+        .portfolio-link:hover { transform: translate(2px, 2px) rotate(1deg); box-shadow: 1px 1px 0 var(--line); }
 
-        .intro {
-            display: flex;
-            align-items: end;
-            justify-content: space-between;
-            gap: 28px;
-            margin-bottom: 24px;
+        .hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1.05fr) minmax(420px, .95fr);
+            align-items: center;
+            gap: clamp(32px, 6vw, 88px);
+            min-height: 390px;
+            margin-bottom: 30px;
         }
 
-        .eyebrow {
-            margin: 0 0 10px;
-            color: var(--orange-light);
-            font: 600 12px "JetBrains Mono", monospace;
-            letter-spacing: .12em;
+        .chapter-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            margin-bottom: 16px;
+            color: var(--coral-dark);
+            font: 700 12px "Barlow Condensed", sans-serif;
+            letter-spacing: .16em;
             text-transform: uppercase;
+        }
+
+        .chapter-label span {
+            display: grid;
+            width: 27px;
+            height: 27px;
+            place-items: center;
+            border: 1.5px solid var(--line);
+            border-radius: 50%;
+            background: var(--yellow);
+            color: var(--ink);
+            letter-spacing: 0;
         }
 
         h1 {
             max-width: 760px;
             margin: 0;
-            font-size: clamp(32px, 5vw, 58px);
-            line-height: .98;
-            letter-spacing: -.055em;
+            font: 800 clamp(52px, 6.2vw, 92px)/.88 "Bricolage Grotesque", sans-serif;
+            letter-spacing: -.075em;
         }
 
-        .intro-copy {
-            max-width: 420px;
-            margin: 0 0 3px;
-            color: var(--muted);
-            font-size: 15px;
-            line-height: 1.65;
+        h1 em {
+            position: relative;
+            display: inline-block;
+            color: var(--coral-dark);
+            font-family: "Caveat", cursive;
+            font-weight: 700;
+            letter-spacing: -.035em;
+            transform: rotate(-2deg);
         }
 
-        .workspace {
-            display: grid;
-            grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
-            min-height: 690px;
-            overflow: hidden;
-            border: 1px solid var(--line-strong);
-            border-radius: 24px;
-            background: rgba(12, 14, 17, 0.86);
-            box-shadow: 0 30px 80px rgba(0,0,0,.32);
-            backdrop-filter: blur(18px);
+        h1 em::after {
+            content: "";
+            position: absolute;
+            right: 0;
+            bottom: 2px;
+            left: 0;
+            height: 6px;
+            border-top: 3px solid var(--coral);
+            border-radius: 50%;
+            transform: rotate(-1deg);
         }
 
-        .control-panel {
-            padding: 26px;
-            border-right: 1px solid var(--line);
-            background: linear-gradient(180deg, rgba(255,87,34,.035), transparent 45%);
+        .hero-copy > p {
+            max-width: 620px;
+            margin: 22px 0 20px;
+            color: var(--ink-soft);
+            font-size: 16px;
+            line-height: 1.75;
         }
 
-        .panel-label {
-            display: flex;
+        .hero-notes { display: flex; flex-wrap: wrap; gap: 9px; }
+
+        .hero-note {
+            display: inline-flex;
             align-items: center;
-            justify-content: space-between;
-            margin-bottom: 14px;
-            color: var(--soft);
-            font: 500 12px "JetBrains Mono", monospace;
-            letter-spacing: .06em;
+            gap: 7px;
+            padding: 7px 10px;
+            border: 1.5px solid var(--line);
+            border-radius: 999px;
+            background: rgba(255,250,240,.7);
+            font: 500 10px "DM Mono", monospace;
             text-transform: uppercase;
         }
 
-        .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); box-shadow: 0 0 14px rgba(85,214,139,.6); }
+        .hero-note:nth-child(2) { transform: rotate(1deg); background: #e5ecd3; }
+        .hero-note:nth-child(3) { transform: rotate(-1deg); background: #d7ebe5; }
 
-        textarea {
-            width: 100%;
-            min-height: 154px;
-            resize: vertical;
-            padding: 17px;
-            border: 1px solid var(--line);
-            border-radius: 14px;
-            outline: none;
-            background: #090b0e;
-            color: var(--text);
-            font-size: 16px;
-            line-height: 1.55;
-            transition: border-color 160ms ease, box-shadow 160ms ease;
+        .scene-card {
+            position: relative;
+            min-height: 340px;
+            border: 2px solid var(--line);
+            border-radius: 47% 53% 42% 58% / 51% 42% 58% 49%;
+            background: linear-gradient(155deg, #d9ece4 0%, #f8e0bc 67%, #f4cb94 100%);
+            box-shadow: 10px 10px 0 rgba(37,49,39,.92);
+            transform: rotate(1deg);
+            isolation: isolate;
         }
 
-        textarea:focus { border-color: rgba(255,87,34,.75); box-shadow: 0 0 0 4px rgba(255,87,34,.09); }
-        textarea::placeholder { color: #555a61; }
+        .scene-card::before {
+            content: "";
+            position: absolute;
+            inset: 14px;
+            z-index: -1;
+            border: 1.5px dashed rgba(37,49,39,.24);
+            border-radius: inherit;
+        }
 
-        .suggestions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 18px; }
+        .scene-card svg { position: absolute; inset: 5% 4% 2%; width: 92%; height: 93%; overflow: visible; }
+
+        .scene-note {
+            position: absolute;
+            top: -13px;
+            right: 9%;
+            z-index: 2;
+            padding: 8px 14px;
+            border: 1.5px solid var(--line);
+            background: var(--yellow);
+            box-shadow: 3px 3px 0 var(--line);
+            font: 700 17px "Caveat", cursive;
+            transform: rotate(3deg);
+        }
+
+        .scene-caption {
+            position: absolute;
+            right: 6%;
+            bottom: 11px;
+            color: var(--sage-dark);
+            font: 700 15px "Caveat", cursive;
+            transform: rotate(-3deg);
+        }
+
+        .bot-head { transform-origin: center bottom; animation: bot-bob 3.4s ease-in-out infinite; }
+        .bot-head.two { animation-delay: -.8s; }
+        .bot-head.three { animation-delay: -1.7s; }
+        .bot-eye { transform-origin: center; animation: blink 4.8s infinite; }
+        .paper-float { animation: paper-float 3s ease-in-out infinite; }
+
+        .workspace {
+            position: relative;
+            display: grid;
+            grid-template-columns: minmax(330px, 410px) minmax(0, 1fr);
+            min-height: 740px;
+            overflow: hidden;
+            border: 3px solid var(--line);
+            border-radius: 30px 23px 34px 25px;
+            background: var(--paper);
+            box-shadow: 12px 12px 0 var(--line);
+        }
+
+        .workspace::before {
+            content: "LAZYWRITER / STORY DESK 01";
+            position: absolute;
+            top: -1px;
+            right: 74px;
+            z-index: 4;
+            padding: 4px 12px 5px;
+            border: 2px solid var(--line);
+            border-top: 0;
+            border-radius: 0 0 8px 8px;
+            background: var(--sage);
+            font: 500 9px "DM Mono", monospace;
+            letter-spacing: .08em;
+        }
+
+        .control-panel {
+            position: relative;
+            padding: 30px 27px;
+            border-right: 3px solid var(--line);
+            background:
+                linear-gradient(rgba(255,255,255,.2), rgba(255,255,255,.2)),
+                var(--peach);
+        }
+
+        .control-panel::after {
+            content: "✎";
+            position: absolute;
+            right: 20px;
+            bottom: 16px;
+            color: rgba(173,72,43,.22);
+            font: 700 46px "Caveat", cursive;
+            transform: rotate(13deg);
+        }
+
+        .panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 20px; }
+        .panel-kicker { margin: 0 0 5px; color: var(--coral-dark); font: 700 10px "DM Mono", monospace; letter-spacing: .11em; text-transform: uppercase; }
+        .panel-heading h2 { margin: 0; font: 800 27px/1 "Bricolage Grotesque", sans-serif; letter-spacing: -.04em; }
+
+        .ready-stamp {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 8px;
+            border: 1.5px solid var(--sage-dark);
+            border-radius: 7px;
+            color: var(--sage-dark);
+            background: rgba(255,250,240,.45);
+            font: 700 9px "DM Mono", monospace;
+            text-transform: uppercase;
+            transform: rotate(2deg);
+        }
+
+        .ready-stamp i { width: 7px; height: 7px; border-radius: 50%; background: #78a562; animation: pulse 1.8s ease-in-out infinite; }
+
+        .field-label { display: block; margin-bottom: 9px; color: var(--ink-soft); font-size: 12px; font-weight: 700; }
+
+        .textarea-wrap { position: relative; }
+
+        textarea {
+            display: block;
+            width: 100%;
+            min-height: 150px;
+            resize: vertical;
+            padding: 17px 18px 34px;
+            border: 2px solid var(--line);
+            border-radius: 16px 12px 18px 11px;
+            outline: none;
+            background: var(--paper);
+            color: var(--ink);
+            box-shadow: 4px 4px 0 rgba(37,49,39,.78);
+            font-size: 15px;
+            line-height: 1.55;
+            transition: transform 160ms ease, box-shadow 160ms ease;
+        }
+
+        textarea:focus { transform: translate(-1px, -1px); box-shadow: 6px 6px 0 var(--line); }
+        textarea::placeholder { color: #929681; }
+
+        .counter {
+            position: absolute;
+            right: 12px;
+            bottom: 9px;
+            color: var(--muted);
+            font: 500 9px "DM Mono", monospace;
+        }
+
+        .suggestion-label { margin: 17px 0 8px; color: var(--muted); font: 500 9px "DM Mono", monospace; text-transform: uppercase; letter-spacing: .08em; }
+        .suggestions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 19px; }
 
         .chip {
             padding: 7px 10px;
-            border: 1px solid var(--line);
+            border: 1.5px solid var(--line);
             border-radius: 999px;
-            background: transparent;
-            color: var(--muted);
+            background: var(--paper);
+            color: var(--ink-soft);
+            box-shadow: 2px 2px 0 rgba(37,49,39,.8);
             cursor: pointer;
-            font: 11px "JetBrains Mono", monospace;
-            transition: 160ms ease;
+            font: 500 9px "DM Mono", monospace;
+            transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
         }
 
-        .chip:hover { color: var(--text); border-color: rgba(255,87,34,.45); background: rgba(255,87,34,.06); }
+        .chip:nth-child(2) { transform: rotate(1deg); background: #e6ecd6; }
+        .chip:nth-child(3) { transform: rotate(-1deg); background: #d9ebe7; }
+        .chip:hover { background: var(--yellow); box-shadow: 1px 1px 0 var(--line); transform: translate(1px,1px) rotate(-1deg); }
 
         .generate-button {
             display: flex;
             width: 100%;
             align-items: center;
             justify-content: center;
-            gap: 9px;
-            padding: 13px 16px;
-            border: 0;
-            border-radius: 12px;
-            color: #1a0b05;
-            background: linear-gradient(135deg, var(--orange-light), var(--orange));
-            box-shadow: 0 12px 30px rgba(255,87,34,.22);
-            font-weight: 700;
+            gap: 10px;
+            padding: 14px 18px;
+            border: 2px solid var(--line);
+            border-radius: 15px 11px 17px 12px;
+            color: var(--ink);
+            background: var(--coral);
+            box-shadow: 5px 5px 0 var(--line);
             cursor: pointer;
-            transition: 180ms ease;
+            font-weight: 800;
+            transition: transform 150ms ease, box-shadow 150ms ease;
         }
 
-        .generate-button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 16px 38px rgba(255,87,34,.3); }
-        .generate-button:disabled { cursor: wait; opacity: .65; }
+        .generate-button:hover:not(:disabled) { transform: translate(3px,3px) rotate(-.4deg); box-shadow: 2px 2px 0 var(--line); }
+        .generate-button:disabled { cursor: wait; filter: saturate(.55); }
+        .button-spark { font-size: 17px; }
 
-        .pipeline { margin-top: 30px; padding-top: 22px; border-top: 1px solid var(--line); }
-        .pipeline h2 { margin: 0 0 17px; font-size: 13px; letter-spacing: -.01em; }
+        .button-note { margin: 12px 0 0; color: var(--ink-soft); font: 600 15px "Caveat", cursive; text-align: center; transform: rotate(-1deg); }
+
+        .pipeline { margin-top: 27px; padding-top: 21px; border-top: 2px dashed rgba(37,49,39,.34); }
+        .pipeline-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 13px; }
+        .pipeline-head h3 { margin: 0; font: 800 15px "Bricolage Grotesque", sans-serif; }
+        .pipeline-head span { color: var(--coral-dark); font: 700 14px "Caveat", cursive; transform: rotate(-2deg); }
         .steps { display: grid; gap: 5px; }
 
         .step {
             display: grid;
-            grid-template-columns: 28px 1fr auto;
+            grid-template-columns: 30px 1fr auto;
             align-items: center;
-            gap: 10px;
-            padding: 10px 8px;
-            border-radius: 10px;
-            color: #62666c;
-            transition: 200ms ease;
+            gap: 9px;
+            min-height: 42px;
+            padding: 6px 8px;
+            border: 1.5px solid transparent;
+            border-radius: 10px 8px 11px 7px;
+            color: #7f826f;
+            transition: 180ms ease;
         }
+
+        .step:nth-child(odd) { transform: rotate(-.18deg); }
+        .step:nth-child(even) { transform: rotate(.18deg); }
 
         .step-index {
             display: grid;
-            width: 25px;
-            height: 25px;
+            width: 27px;
+            height: 27px;
             place-items: center;
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            font: 10px "JetBrains Mono", monospace;
+            border: 1.5px solid rgba(37,49,39,.3);
+            border-radius: 8px 6px 9px 7px;
+            background: rgba(255,250,240,.55);
+            font: 500 9px "DM Mono", monospace;
         }
 
-        .step-name { font-size: 13px; }
-        .step-state { font: 10px "JetBrains Mono", monospace; text-transform: uppercase; }
-        .step.active { color: var(--text); background: rgba(255,87,34,.07); }
-        .step.active .step-index { border-color: var(--orange); color: var(--orange-light); box-shadow: 0 0 16px rgba(255,87,34,.16); }
-        .step.done { color: var(--soft); }
-        .step.done .step-index { border-color: rgba(85,214,139,.4); color: var(--success); }
+        .step-name { font-size: 12px; font-weight: 600; }
+        .step-state { font: 500 8px "DM Mono", monospace; letter-spacing: .05em; text-transform: uppercase; }
+        .step.active { border-color: var(--line); background: var(--yellow); color: var(--ink); box-shadow: 3px 3px 0 var(--line); }
+        .step.active .step-index { border-color: var(--line); background: var(--paper); color: var(--coral-dark); }
+        .step.done { color: var(--sage-dark); }
+        .step.done .step-index { border-color: var(--sage-dark); background: #e4ebd4; }
+        .step.done .step-index::after { content: "✓"; position: absolute; }
+        .step.done .step-index { color: transparent; position: relative; }
+        .step.done .step-index::after { color: var(--sage-dark); }
 
-        .result-panel { min-width: 0; background: var(--panel); }
+        .result-panel { min-width: 0; background: #fffdf7; }
 
         .result-toolbar {
             display: flex;
-            min-height: 58px;
+            min-height: 64px;
             align-items: center;
             justify-content: space-between;
             gap: 16px;
-            padding: 0 22px;
-            border-bottom: 1px solid var(--line);
+            padding: 0 23px;
+            border-bottom: 2px dashed rgba(37,49,39,.25);
+            background: rgba(255,250,240,.74);
         }
 
-        .result-meta { display: flex; align-items: center; gap: 10px; min-width: 0; }
-        .file-dot { width: 9px; height: 9px; border-radius: 3px; background: var(--orange); }
-        #resultTitle { overflow: hidden; color: var(--soft); font: 12px "JetBrains Mono", monospace; text-overflow: ellipsis; white-space: nowrap; }
+        .result-meta { display: flex; min-width: 0; align-items: center; gap: 10px; }
+        .file-dot { width: 11px; height: 11px; border: 1.5px solid var(--line); border-radius: 3px; background: var(--coral); transform: rotate(8deg); }
+        #resultTitle { overflow: hidden; color: var(--ink-soft); font: 500 10px "DM Mono", monospace; text-overflow: ellipsis; white-space: nowrap; }
 
         .download-link {
             display: none;
             flex: 0 0 auto;
-            padding: 7px 10px;
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            color: var(--soft);
-            font: 11px "JetBrains Mono", monospace;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 11px;
+            border: 1.5px solid var(--line);
+            border-radius: 10px 8px 11px 7px;
+            background: var(--yellow);
+            box-shadow: 2px 2px 0 var(--line);
+            font: 600 10px "DM Mono", monospace;
             text-decoration: none;
         }
 
-        .download-link:hover { color: white; border-color: rgba(255,87,34,.5); }
-
-        .result-scroll { height: 630px; overflow: auto; scrollbar-color: #30343a transparent; }
+        .download-link:hover { transform: translate(1px,1px); box-shadow: 1px 1px 0 var(--line); }
+        .result-scroll { height: 674px; overflow: auto; scrollbar-color: var(--sage) transparent; }
 
         .empty-state {
             display: grid;
             min-height: 100%;
             place-items: center;
-            padding: 40px;
+            padding: 44px;
             text-align: center;
         }
 
-        .empty-icon { margin: 0 auto 18px; color: var(--orange); opacity: .8; }
-        .empty-state h2 { margin: 0 0 8px; font-size: 20px; letter-spacing: -.03em; }
-        .empty-state p { max-width: 390px; margin: 0; color: var(--muted); font-size: 14px; line-height: 1.6; }
+        .empty-illustration { position: relative; width: min(360px, 90%); margin: 0 auto 22px; }
+        .empty-illustration svg { display: block; width: 100%; height: auto; overflow: visible; }
+
+        .speech-bubble {
+            position: absolute;
+            top: 0;
+            right: -16px;
+            max-width: 150px;
+            padding: 8px 11px;
+            border: 1.5px solid var(--line);
+            border-radius: 12px 12px 12px 3px;
+            background: var(--paper);
+            box-shadow: 2px 2px 0 var(--line);
+            font: 700 14px "Caveat", cursive;
+            transform: rotate(2deg);
+        }
+
+        .empty-state h2 { margin: 0 0 8px; font: 800 25px "Bricolage Grotesque", sans-serif; letter-spacing: -.04em; }
+        .empty-state p { max-width: 460px; margin: 0 auto; color: var(--muted); font-size: 13px; line-height: 1.7; }
 
         .article {
             display: none;
-            width: min(820px, calc(100% - 48px));
+            width: min(830px, calc(100% - 54px));
             margin: 0 auto;
-            padding: 50px 0 80px;
-            color: #d8d9dc;
-            font-size: 16px;
-            line-height: 1.76;
+            padding: 50px 0 84px;
+            color: #3f493f;
+            font-size: 15px;
+            line-height: 1.8;
         }
 
-        .article h1 { margin: 0 0 30px; color: white; font-size: clamp(34px, 5vw, 54px); line-height: 1.05; }
-        .article h2 { margin: 48px 0 15px; color: white; font-size: 28px; line-height: 1.2; letter-spacing: -.035em; }
-        .article h3 { margin: 31px 0 10px; color: #f0f0f1; font-size: 19px; }
+        .article h1, .article h2, .article h3 { color: var(--ink); font-family: "Bricolage Grotesque", sans-serif; }
+        .article h1 { margin: 0 0 32px; font-size: clamp(36px, 5vw, 58px); line-height: 1; letter-spacing: -.055em; }
+        .article h2 { margin: 52px 0 16px; padding-bottom: 9px; border-bottom: 3px solid var(--coral); font-size: 28px; line-height: 1.15; letter-spacing: -.035em; }
+        .article h3 { margin: 31px 0 11px; font-size: 19px; }
         .article p { margin: 0 0 18px; }
-        .article ul { margin: 0 0 20px; padding-left: 24px; }
+        .article ul, .article ol { margin: 0 0 21px; padding-left: 24px; }
         .article li { margin-bottom: 8px; }
-        .article strong { color: #fff; }
-        .article a { color: var(--orange-light); text-decoration-color: rgba(255,112,67,.4); text-underline-offset: 3px; }
-        .article code { padding: 2px 6px; border: 1px solid var(--line); border-radius: 5px; background: #111419; color: #ff9a78; font: 13px "JetBrains Mono", monospace; }
-        .article pre { overflow: auto; margin: 22px 0; padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: #07080a; }
-        .article pre code { padding: 0; border: 0; background: transparent; color: #d7dae0; }
-        .article figure { margin: 30px 0; }
-        .article img { display: block; width: 100%; border: 1px solid var(--line-strong); border-radius: 16px; background: #07080a; }
-        .article figcaption { margin-top: 10px; color: var(--muted); font-size: 13px; text-align: center; }
+        .article strong { color: var(--ink); }
+        .article a { color: var(--coral-dark); text-decoration-color: var(--coral); text-underline-offset: 3px; }
+        .article code { padding: 2px 6px; border: 1px solid var(--sage-dark); border-radius: 5px; background: #edf0dd; color: #9b3f24; font: 12px "DM Mono", monospace; }
+        .article pre { overflow: auto; margin: 23px 0; padding: 20px; border: 2px solid var(--line); border-radius: 13px 9px 15px 10px; background: var(--ink); box-shadow: 5px 5px 0 var(--coral); }
+        .article pre code { padding: 0; border: 0; background: transparent; color: var(--cream); }
+        .article blockquote { margin: 22px 0; padding: 13px 17px; border-left: 5px solid var(--coral); background: #fff1db; color: var(--ink-soft); }
+        .article figure { margin: 34px 0; padding: 10px; border: 2px solid var(--line); border-radius: 18px 13px 20px 12px; background: var(--paper); box-shadow: 6px 6px 0 var(--sage-dark); transform: rotate(-.2deg); }
+        .article img { display: block; width: 100%; border-radius: 11px; background: var(--cream); }
+        .article figcaption { margin-top: 10px; color: var(--ink-soft); font: 600 17px "Caveat", cursive; text-align: center; }
 
         .error-box {
             display: none;
-            margin: 22px;
-            padding: 15px 16px;
-            border: 1px solid rgba(255,107,95,.3);
-            border-radius: 12px;
-            background: rgba(255,107,95,.06);
-            color: #ffb2ab;
-            font-size: 14px;
-            line-height: 1.5;
+            margin: 28px;
+            padding: 17px 18px;
+            border: 2px solid var(--danger);
+            border-radius: 13px 9px 15px 10px;
+            background: #ffe1c1;
+            color: #7c311d;
+            box-shadow: 5px 5px 0 var(--danger);
+            font-size: 13px;
+            line-height: 1.6;
         }
 
-        .spinner { width: 15px; height: 15px; border: 2px solid rgba(26,11,5,.25); border-top-color: #1a0b05; border-radius: 50%; animation: spin .7s linear infinite; }
+        .footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            padding: 28px 4px 2px;
+            color: var(--muted);
+            font: 500 9px "DM Mono", monospace;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+        }
+
+        .footer-stack { display: flex; flex-wrap: wrap; gap: 6px; }
+        .footer-stack span { padding: 5px 8px; border: 1px solid rgba(37,49,39,.28); border-radius: 999px; background: rgba(255,250,240,.5); }
+        .signature { color: var(--coral-dark); font: 700 18px "Caveat", cursive; letter-spacing: 0; text-transform: none; transform: rotate(-2deg); }
+
+        .spinner { width: 16px; height: 16px; border: 2px solid rgba(37,49,39,.25); border-top-color: var(--ink); border-radius: 50%; animation: spin .7s linear infinite; }
+
         @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse { 50% { transform: scale(.7); opacity: .55; } }
+        @keyframes blink { 0%, 44%, 48%, 100% { transform: scaleY(1); } 46% { transform: scaleY(.08); } }
+        @keyframes bot-bob { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-4px) rotate(1deg); } }
+        @keyframes paper-float { 0%, 100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-6px) rotate(-2deg); } }
 
-        @media (max-width: 900px) {
-            .intro { display: block; }
-            .intro-copy { margin-top: 18px; }
+        :focus-visible { outline: 3px solid var(--coral-dark); outline-offset: 3px; }
+
+        @media (max-width: 1040px) {
+            .hero { grid-template-columns: 1fr .85fr; }
+            .scene-card { min-height: 300px; }
+            .workspace { grid-template-columns: 340px minmax(0,1fr); }
+        }
+
+        @media (max-width: 850px) {
+            .hero { grid-template-columns: 1fr; }
+            .scene-card { width: min(620px, 95%); min-height: 330px; margin: 0 auto; }
             .workspace { grid-template-columns: 1fr; }
-            .control-panel { border-right: 0; border-bottom: 1px solid var(--line); }
-            .result-scroll { height: auto; min-height: 560px; }
+            .control-panel { border-right: 0; border-bottom: 3px solid var(--line); }
+            .result-scroll { height: auto; min-height: 640px; }
+            .workspace::before { display: none; }
         }
 
-        @media (max-width: 560px) {
-            .shell { width: min(100% - 24px, 1480px); padding-top: 12px; }
-            .brand-copy span { display: none; }
-            .portfolio-link span { display: none; }
-            .intro { margin-top: 28px; }
-            .control-panel { padding: 20px; }
-            .article { width: calc(100% - 32px); padding-top: 34px; }
-        }
-    </style>
-    <style>
-        /* Warm, hand-drawn theme inspired by Subramanian's illustrated portfolio. */
-        :root {
-            --bg: #f5eedb;
-            --panel: #fff9ea;
-            --panel-raised: #ffe9cd;
-            --line: rgba(32, 37, 30, 0.18);
-            --line-strong: #20251e;
-            --text: #20251e;
-            --muted: #6f775f;
-            --soft: #304635;
-            --orange: #ff693b;
-            --orange-light: #ff895d;
-            --orange-dark: #a64425;
-            --success: #4f7756;
-            --danger: #a64425;
-        }
-
-        html { color-scheme: light; }
-
-        body {
-            background:
-                radial-gradient(circle at 10% 10%, rgba(255, 137, 93, .28) 0 5rem, transparent 5.2rem),
-                radial-gradient(circle at 91% 18%, rgba(161, 173, 137, .34) 0 7rem, transparent 7.2rem),
-                linear-gradient(180deg, #fff9ea 0%, #f5eedb 42%, #f2ecd8 100%);
-            color: var(--text);
-            font-family: "Manrope", sans-serif;
+        @media (max-width: 580px) {
+            .shell { width: min(100% - 22px, 1460px); padding-top: 13px; }
+            .topbar { margin-bottom: 22px; }
+            .brand-copy span, .system-status, .portfolio-link span { display: none; }
+            .portfolio-link { padding: 9px; }
+            .hero { min-height: 0; gap: 29px; }
+            h1 { font-size: clamp(47px, 16vw, 68px); }
+            .hero-copy > p { font-size: 14px; }
+            .scene-card { min-height: 255px; box-shadow: 7px 7px 0 var(--line); }
+            .scene-note { right: 2%; }
+            .scene-caption { display: none; }
+            .workspace { border-radius: 22px 17px 25px 18px; box-shadow: 7px 7px 0 var(--line); }
+            .control-panel { padding: 25px 19px; }
+            .panel-heading h2 { font-size: 24px; }
+            .result-toolbar { padding: 0 15px; }
+            .download-link { padding: 8px; }
+            .download-link span { display: none; }
+            .result-scroll { min-height: 560px; }
+            .empty-state { padding: 35px 20px; }
+            .speech-bubble { right: -4px; font-size: 12px; }
+            .article { width: calc(100% - 30px); padding-top: 36px; }
+            .article h2 { font-size: 24px; }
+            .footer { display: block; text-align: center; }
+            .footer-stack { justify-content: center; margin-bottom: 13px; }
         }
 
-        body::before {
-            opacity: .28;
-            background-image:
-                radial-gradient(#304635 1px, transparent 1px),
-                radial-gradient(#ff693b 1px, transparent 1px);
-            background-position: 0 0, 14px 14px;
-            background-size: 28px 28px;
-            mask-image: linear-gradient(to bottom, black, transparent 88%);
-        }
-
-        body::after {
-            content: "✦  beep boop  ✎";
-            position: fixed;
-            right: 3vw;
-            bottom: 2vh;
-            z-index: -1;
-            color: rgba(48, 70, 53, .3);
-            font: 700 22px "Caveat", cursive;
-            transform: rotate(-7deg);
-        }
-
-        .shell { width: min(1440px, calc(100% - 40px)); }
-
-        .brand-mark {
-            border: 2px solid var(--line-strong);
-            border-radius: 50% 44% 52% 46%;
-            color: #20251e;
-            background: var(--orange-light);
-            box-shadow: 4px 4px 0 #20251e;
-            transform: rotate(-5deg);
-        }
-
-        .brand-copy strong,
-        h1,
-        .empty-state h2,
-        .article h1,
-        .article h2,
-        .article h3 {
-            font-family: "Bricolage Grotesque", sans-serif;
-        }
-
-        .brand-copy span,
-        .panel-label,
-        .step-index,
-        .step-state,
-        #resultTitle,
-        .download-link,
-        .chip { color: var(--muted); }
-
-        .portfolio-link {
-            border: 2px solid var(--line-strong);
-            border-radius: 12px 18px 11px 15px;
-            background: #fff9ea;
-            color: var(--text);
-            box-shadow: 3px 3px 0 var(--line-strong);
-            font-weight: 700;
-        }
-
-        .portfolio-link:hover {
-            border-color: var(--line-strong);
-            color: var(--text);
-            box-shadow: 1px 1px 0 var(--line-strong);
-            transform: translate(2px, 2px) rotate(1deg);
-        }
-
-        .intro { align-items: center; }
-
-        .eyebrow {
-            display: inline-block;
-            margin-bottom: 14px;
-            padding: 5px 11px;
-            border: 2px solid var(--line-strong);
-            border-radius: 999px;
-            background: #f7dfbe;
-            color: #9c3f24;
-            font-family: "JetBrains Mono", monospace;
-            box-shadow: 3px 3px 0 var(--line-strong);
-            transform: rotate(-1deg);
-        }
-
-        h1 { color: #20251e; font-weight: 800; letter-spacing: -.06em; }
-
-        .intro-copy {
-            position: relative;
-            padding: 16px 18px;
-            border: 2px solid var(--line-strong);
-            border-radius: 20px 20px 20px 5px;
-            background: #fff9ea;
-            color: #56604e;
-            box-shadow: 5px 5px 0 rgba(32,37,30,.88);
-            transform: rotate(1deg);
-        }
-
-        .intro-copy::before {
-            content: "psst…";
-            position: absolute;
-            right: 16px;
-            top: -22px;
-            color: #a64425;
-            font: 700 22px "Caveat", cursive;
-            transform: rotate(6deg);
-        }
-
-        .workspace {
-            overflow: visible;
-            border: 3px solid var(--line-strong);
-            border-radius: 28px 20px 30px 22px;
-            background: #fff9ea;
-            box-shadow: 10px 11px 0 #304635;
-            backdrop-filter: none;
-        }
-
-        .control-panel {
-            border-right: 3px solid var(--line-strong);
-            border-radius: 24px 0 0 18px;
-            background:
-                linear-gradient(145deg, rgba(255,137,93,.22), transparent 35%),
-                #ffe9cd;
-        }
-
-        .status-dot { background: #7e986d; box-shadow: 0 0 0 4px rgba(126,152,109,.18); }
-
-        textarea {
-            border: 2px solid var(--line-strong);
-            border-radius: 16px 13px 19px 12px;
-            background: #fffdf5;
-            color: var(--text);
-            box-shadow: inset 0 -3px rgba(48,70,53,.06), 4px 4px 0 rgba(48,70,53,.35);
-        }
-
-        textarea:focus {
-            border-color: var(--line-strong);
-            box-shadow: inset 0 -3px rgba(255,105,59,.09), 5px 5px 0 var(--orange);
-            transform: translate(-1px, -1px);
-        }
-
-        textarea::placeholder { color: #8b8f7c; }
-
-        .chip {
-            border: 1.5px solid var(--line-strong);
-            background: #fff9ea;
-            color: #4f5b49;
-            box-shadow: 2px 2px 0 rgba(32,37,30,.8);
-        }
-
-        .chip:nth-child(2) { transform: rotate(1deg); }
-        .chip:nth-child(3) { transform: rotate(-1deg); }
-
-        .chip:hover {
-            border-color: var(--line-strong);
-            background: #f7dfbe;
-            color: var(--text);
-            box-shadow: 1px 1px 0 var(--line-strong);
-            transform: translate(1px, 1px) rotate(-1deg);
-        }
-
-        .generate-button {
-            border: 2px solid var(--line-strong);
-            border-radius: 15px 12px 17px 11px;
-            color: #20251e;
-            background: var(--orange-light);
-            box-shadow: 5px 5px 0 var(--line-strong);
-        }
-
-        .generate-button:hover:not(:disabled) {
-            box-shadow: 2px 2px 0 var(--line-strong);
-            transform: translate(3px, 3px) rotate(-.5deg);
-        }
-
-        .pipeline { border-top: 2px dashed rgba(32,37,30,.35); }
-        .pipeline h2::after { content: " tiny agents on duty"; margin-left: 8px; color: #a64425; font: 600 17px "Caveat", cursive; }
-
-        .step { color: #7a806e; border: 1px solid transparent; }
-        .step:nth-child(odd) { transform: rotate(-.2deg); }
-        .step:nth-child(even) { transform: rotate(.2deg); }
-        .step-index { border: 1.5px solid rgba(32,37,30,.3); background: rgba(255,249,234,.55); }
-        .step.active { border-color: var(--line-strong); background: #f7dfbe; color: var(--text); box-shadow: 3px 3px 0 var(--line-strong); }
-        .step.active .step-index { border-color: var(--line-strong); color: #9c3f24; box-shadow: none; }
-        .step.done { color: #304635; }
-        .step.done .step-index { border-color: #4f7756; color: #304635; background: #dfe7cc; }
-
-        .result-panel { border-radius: 0 17px 27px 0; background: #fffdf5; }
-        .result-toolbar { border-bottom: 2px dashed rgba(32,37,30,.25); }
-        .file-dot { background: var(--orange); border: 1px solid var(--line-strong); transform: rotate(8deg); }
-
-        .download-link {
-            border: 1.5px solid var(--line-strong);
-            border-radius: 10px 8px 11px 7px;
-            background: #f7dfbe;
-            color: var(--text);
-            box-shadow: 2px 2px 0 var(--line-strong);
-        }
-
-        .download-link:hover { border-color: var(--line-strong); color: var(--text); transform: translate(1px,1px); box-shadow: 1px 1px 0 var(--line-strong); }
-
-        .empty-icon { color: #ff693b; filter: drop-shadow(3px 3px 0 rgba(32,37,30,.15)); }
-        .empty-state h2 { color: #20251e; }
-        .empty-state p { color: #6f775f; }
-
-        .article { color: #343a31; }
-        .article h1, .article h2, .article h3, .article strong { color: #20251e; }
-        .article h2 { padding-bottom: 8px; border-bottom: 3px solid #ff895d; }
-        .article a { color: #a64425; text-decoration-color: #ff895d; }
-        .article code { border: 1px solid #304635; background: #f7dfbe; color: #9c3f24; }
-        .article pre { border: 2px solid #20251e; background: #20251e; box-shadow: 5px 5px 0 #ff895d; }
-        .article pre code { color: #f5eedb; }
-        .article figure { padding: 10px; border: 2px solid #20251e; border-radius: 18px 14px 20px 12px; background: #fff9ea; box-shadow: 6px 6px 0 #304635; transform: rotate(-.25deg); }
-        .article img { border: 0; border-radius: 11px; background: #f5eedb; }
-        .article figcaption { color: #5e6957; font-family: "Caveat", cursive; font-size: 18px; }
-
-        .error-box { border: 2px solid #a64425; background: #ffe5c3; color: #7c301b; box-shadow: 4px 4px 0 #a64425; }
-        .spinner { border-color: rgba(32,37,30,.25); border-top-color: #20251e; }
-
-        @media (max-width: 900px) {
-            .control-panel { border-right: 0; border-bottom: 3px solid var(--line-strong); border-radius: 24px 18px 0 0; }
-            .result-panel { border-radius: 0 0 27px 20px; }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
         }
     </style>
 </head>
 <body>
     <main class="shell">
         <header class="topbar">
-            <a class="brand" href="/" aria-label="Agent Writer home">
-                <span class="brand-mark" aria-hidden="true">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4 17l4-8 4 4 4-6 4 10"></path>
-                    </svg>
-                </span>
-                <span class="brand-copy"><strong>Agent Writer</strong><span>LangGraph · FastAPI · OpenRouter</span></span>
+            <a class="brand" href="/" aria-label="LazyWriter home">
+                <span class="brand-mark" aria-hidden="true">lw</span>
+                <span class="brand-copy"><strong>LazyWriter</strong><span>a tiny AI newsroom</span></span>
             </a>
-            <a class="portfolio-link" href="https://portfolio-subramanian-007.vercel.app/" target="_blank" rel="noreferrer">
-                <span>Portfolio</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 17L17 7M7 7h10v10"></path></svg>
-            </a>
+            <div class="top-actions">
+                <span class="system-status"><i></i> Newsroom online</span>
+                <a class="portfolio-link" href="https://ai-engineer-portfolio-nine.vercel.app/" target="_blank" rel="noreferrer">
+                    <span>Back to portfolio</span>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17L17 7M7 7h10v10"></path></svg>
+                </a>
+            </div>
         </header>
 
-        <section class="intro">
-            <div>
-                <p class="eyebrow">Tiny agents. Big article.</p>
-                <h1>Feed it a topic. Watch the robots write.</h1>
+        <section class="hero" aria-labelledby="hero-title">
+            <div class="hero-copy">
+                <div class="chapter-label"><span>01</span> Meet the laziest hard-working team</div>
+                <h1 id="hero-title">You bring the idea.<br>We do the <em>writing.</em></h1>
+                <p>Drop in a topic and let a tiny crew of AI agents research, plan, draft in parallel, doodle useful visuals, and package one polished Markdown article.</p>
+                <div class="hero-notes" aria-label="LazyWriter capabilities">
+                    <span class="hero-note">✦ Research-aware</span>
+                    <span class="hero-note">6 agent stages</span>
+                    <span class="hero-note">Blob-backed</span>
+                </div>
             </div>
-            <p class="intro-copy">A small crew of overly enthusiastic agents researches, plans, writes in parallel, and doodles useful visuals into one polished Markdown article.</p>
+
+            <div class="scene-card" aria-label="Illustration of three tiny robot writers working together">
+                <span class="scene-note">No blank-page panic!</span>
+                <svg viewBox="0 0 560 350" role="img" aria-labelledby="scene-title">
+                    <title id="scene-title">Three cartoon robot agents researching and writing around a laptop</title>
+                    <path d="M38 294c95-30 385-35 481 0" fill="#d4a974" stroke="#253127" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M55 298h447l-22 27H78Z" fill="#a77552" stroke="#253127" stroke-width="3"/>
+                    <g class="paper-float" transform="translate(418 62)">
+                        <path d="M0 8 63 0l8 72-63 8Z" fill="#fffaf0" stroke="#253127" stroke-width="3"/>
+                        <path d="m10 20 38-5M12 32l44-6M14 45l31-4" stroke="#ff7950" stroke-width="3" stroke-linecap="round"/>
+                    </g>
+                    <g transform="translate(209 196)">
+                        <path d="M0 0h143l-13 91H14Z" fill="#516a57" stroke="#253127" stroke-width="4"/>
+                        <path d="M18 14h107l-8 58H26Z" fill="#b9dcd4" stroke="#253127" stroke-width="3"/>
+                        <circle cx="70" cy="43" r="12" fill="#ff7950" stroke="#253127" stroke-width="3"/>
+                        <path d="M66 43h8M70 39v8" stroke="#253127" stroke-width="2" stroke-linecap="round"/>
+                    </g>
+                    <g class="bot-head" transform="translate(66 143)">
+                        <path d="M46 0v-16m0 0-7-8m7 8 8-8" fill="none" stroke="#253127" stroke-width="3" stroke-linecap="round"/>
+                        <rect x="4" y="0" width="84" height="66" rx="27" fill="#ffbd91" stroke="#253127" stroke-width="4"/>
+                        <circle class="bot-eye" cx="31" cy="31" r="6" fill="#253127"/>
+                        <circle class="bot-eye" cx="62" cy="31" r="6" fill="#253127"/>
+                        <path d="M35 49q12 8 24 0" fill="none" stroke="#253127" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M8 58-7 82m76-21 17 25" stroke="#253127" stroke-width="4" stroke-linecap="round"/>
+                        <path d="M-21 82h37l7 49h-51Z" fill="#fffaf0" stroke="#253127" stroke-width="3"/>
+                        <path d="m-13 96 22-4m-20 14 25-4" stroke="#b36a4c" stroke-width="2"/>
+                    </g>
+                    <g class="bot-head two" transform="translate(238 79)">
+                        <path d="M46 0v-17" stroke="#253127" stroke-width="3"/>
+                        <circle cx="46" cy="-22" r="6" fill="#f2c96d" stroke="#253127" stroke-width="3"/>
+                        <rect x="1" y="0" width="90" height="72" rx="25" fill="#b9c49d" stroke="#253127" stroke-width="4"/>
+                        <rect x="18" y="19" width="55" height="30" rx="15" fill="#fffaf0" stroke="#253127" stroke-width="3"/>
+                        <circle class="bot-eye" cx="35" cy="34" r="5" fill="#253127"/>
+                        <circle class="bot-eye" cx="57" cy="34" r="5" fill="#253127"/>
+                        <path d="M38 59h18" stroke="#253127" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M10 61-4 91m78-27 18 25" stroke="#253127" stroke-width="4" stroke-linecap="round"/>
+                        <path d="m-9 91 36 8m67-11-29 12" stroke="#253127" stroke-width="4" stroke-linecap="round"/>
+                    </g>
+                    <g class="bot-head three" transform="translate(394 155)">
+                        <path d="M43 0v-15" stroke="#253127" stroke-width="3"/>
+                        <path d="m35-15 8-8 8 8" fill="#ff7950" stroke="#253127" stroke-width="3"/>
+                        <rect x="0" y="0" width="86" height="65" rx="24" fill="#f2c96d" stroke="#253127" stroke-width="4"/>
+                        <circle class="bot-eye" cx="29" cy="30" r="6" fill="#253127"/>
+                        <circle class="bot-eye" cx="58" cy="30" r="6" fill="#253127"/>
+                        <path d="M30 48h28" stroke="#253127" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M9 57-7 87m76-29 18 25" stroke="#253127" stroke-width="4" stroke-linecap="round"/>
+                        <circle cx="-10" cy="91" r="8" fill="#ff7950" stroke="#253127" stroke-width="3"/>
+                    </g>
+                    <path d="M171 108q19-30 41 0M369 100q20-25 39 1" fill="none" stroke="#253127" stroke-width="2" stroke-dasharray="5 7"/>
+                    <path d="m189 95 10 13-16 1M387 89l8 12-15 2" fill="none" stroke="#253127" stroke-width="2"/>
+                    <g fill="#ff7950">
+                        <path d="m114 88 5 12 12 5-12 5-5 12-5-12-12-5 12-5Z"/>
+                        <path d="m471 126 4 9 9 4-9 4-4 9-4-9-9-4 9-4Z"/>
+                    </g>
+                </svg>
+                <span class="scene-caption">research → argue → write → doodle</span>
+            </div>
         </section>
 
-        <section class="workspace" aria-label="Agent Writer workspace">
+        <section class="workspace" aria-label="LazyWriter article workspace">
             <aside class="control-panel">
-                <div class="panel-label"><span>Writing brief</span><span class="status-dot" title="API ready"></span></div>
+                <div class="panel-heading">
+                    <div><p class="panel-kicker">02 / Story seed</p><h2>What are we writing?</h2></div>
+                    <span class="ready-stamp"><i></i> ready</span>
+                </div>
+
                 <form id="writerForm">
-                    <label for="topic" class="sr-only">Blog topic</label>
-                    <textarea id="topic" name="topic" minlength="3" maxlength="300" placeholder="Give the tiny robot newsroom something interesting…" required></textarea>
+                    <label for="topic" class="field-label">Give the newsroom a clear topic</label>
+                    <div class="textarea-wrap">
+                        <textarea id="topic" name="topic" minlength="3" maxlength="300" placeholder="e.g. How LangGraph coordinates parallel AI agents" required></textarea>
+                        <span class="counter"><span id="charCount">0</span>/300</span>
+                    </div>
+                    <p class="suggestion-label">Or borrow a prompt ↓</p>
                     <div class="suggestions" aria-label="Example topics">
                         <button class="chip" type="button" data-topic="How LangGraph coordinates parallel AI agents">LangGraph agents</button>
                         <button class="chip" type="button" data-topic="Modern retrieval augmented generation architectures">Modern RAG</button>
                         <button class="chip" type="button" data-topic="Recent advances in multimodal AI">Multimodal AI</button>
                     </div>
                     <button id="generateButton" class="generate-button" type="submit">
-                        <span id="buttonIcon">
-                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 3l1.7 4.3L18 9l-4.3 1.7L12 15l-1.7-4.3L6 9l4.3-1.7L12 3zM19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15z"></path></svg>
-                        </span>
-                        <span id="buttonText">Wake up the agents</span>
+                        <span id="buttonIcon" class="button-spark" aria-hidden="true">✦</span>
+                        <span id="buttonText">Send it to the newsroom</span>
                     </button>
+                    <p class="button-note">Go stretch. The tiny team has this.</p>
                 </form>
 
                 <div class="pipeline">
-                    <h2>Workflow</h2>
+                    <div class="pipeline-head"><h3>Newsroom board</h3><span>tiny agents on duty</span></div>
                     <div class="steps" id="steps">
-                        <div class="step" data-step="0"><span class="step-index">01</span><span class="step-name">Route topic</span><span class="step-state">waiting</span></div>
-                        <div class="step" data-step="1"><span class="step-index">02</span><span class="step-name">Research sources</span><span class="step-state">waiting</span></div>
-                        <div class="step" data-step="2"><span class="step-index">03</span><span class="step-name">Plan sections</span><span class="step-state">waiting</span></div>
+                        <div class="step" data-step="0"><span class="step-index">01</span><span class="step-name">Route the brief</span><span class="step-state">waiting</span></div>
+                        <div class="step" data-step="1"><span class="step-index">02</span><span class="step-name">Scout sources</span><span class="step-state">waiting</span></div>
+                        <div class="step" data-step="2"><span class="step-index">03</span><span class="step-name">Pin the outline</span><span class="step-state">waiting</span></div>
                         <div class="step" data-step="3"><span class="step-index">04</span><span class="step-name">Draft in parallel</span><span class="step-state">waiting</span></div>
-                        <div class="step" data-step="4"><span class="step-index">05</span><span class="step-name">Generate visuals</span><span class="step-state">waiting</span></div>
-                        <div class="step" data-step="5"><span class="step-index">06</span><span class="step-name">Assemble Markdown</span><span class="step-state">waiting</span></div>
+                        <div class="step" data-step="4"><span class="step-index">05</span><span class="step-name">Doodle visuals</span><span class="step-state">waiting</span></div>
+                        <div class="step" data-step="5"><span class="step-index">06</span><span class="step-name">Bind the Markdown</span><span class="step-state">waiting</span></div>
                     </div>
                 </div>
             </aside>
 
-            <section class="result-panel" aria-live="polite">
+            <section class="result-panel" aria-live="polite" aria-busy="false" id="resultPanel">
                 <div class="result-toolbar">
-                    <div class="result-meta"><span class="file-dot"></span><span id="resultTitle">article-preview.md</span></div>
-                    <a id="downloadLink" class="download-link" href="#" download>Download .md</a>
+                    <div class="result-meta"><span class="file-dot"></span><span id="resultTitle">fresh-page.md</span></div>
+                    <a id="downloadLink" class="download-link" href="#" download>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12m0 0 5-5m-5 5-5-5M5 21h14"></path></svg>
+                        <span>Keep the .md</span>
+                    </a>
                 </div>
                 <div class="result-scroll">
                     <div id="emptyState" class="empty-state">
                         <div>
-                            <svg class="empty-icon" width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M6 3h9l4 4v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path><path d="M14 3v5h5M8 13h8M8 17h5"></path></svg>
-                            <h2>The newsroom is suspiciously quiet</h2>
-                            <p>Give the agents a topic. They will research it, argue about an outline, write the sections, and add pictures where they actually help.</p>
+                            <div class="empty-illustration">
+                                <span class="speech-bubble">We are waiting for a brilliant idea… or a weird one.</span>
+                                <svg viewBox="0 0 420 230" role="img" aria-label="A sleepy cartoon robot waiting at a writing desk">
+                                    <ellipse cx="210" cy="210" rx="160" ry="14" fill="#d9d2ba"/>
+                                    <path d="M67 168h286l-14 39H80Z" fill="#d6a873" stroke="#253127" stroke-width="4"/>
+                                    <path d="M97 169v41m225-41v41" stroke="#253127" stroke-width="5"/>
+                                    <g transform="translate(150 52)">
+                                        <path d="M59 0v-19" stroke="#253127" stroke-width="4"/>
+                                        <path d="m49-17 10-9 10 9" fill="#ff7950" stroke="#253127" stroke-width="3"/>
+                                        <rect x="0" width="122" height="86" rx="33" fill="#b9c49d" stroke="#253127" stroke-width="5"/>
+                                        <path d="M27 35h23m22 0h23" stroke="#253127" stroke-width="5" stroke-linecap="round"/>
+                                        <path d="M45 59q16-8 32 0" fill="none" stroke="#253127" stroke-width="4" stroke-linecap="round"/>
+                                        <path d="M15 77-5 116m110-37 20 36" stroke="#253127" stroke-width="5" stroke-linecap="round"/>
+                                    </g>
+                                    <path d="M246 130h100l-12 57h-77Z" fill="#526b4e" stroke="#253127" stroke-width="4"/>
+                                    <path d="M263 142h64l-7 31h-51Z" fill="#b9dcd4" stroke="#253127" stroke-width="3"/>
+                                    <g class="paper-float" transform="translate(72 75)">
+                                        <path d="m0 8 53-8 9 65-53 8Z" fill="#fffaf0" stroke="#253127" stroke-width="3"/>
+                                        <path d="m11 21 30-5M13 33l34-5M15 45l24-4" stroke="#ff7950" stroke-width="3" stroke-linecap="round"/>
+                                    </g>
+                                    <path d="M296 52q11-18 21 0m-9-14 12-8" fill="none" stroke="#253127" stroke-width="3" stroke-linecap="round"/>
+                                    <text x="326" y="38" fill="#ad482b" font-family="Caveat, cursive" font-size="24" font-weight="700">z z z</text>
+                                </svg>
+                            </div>
+                            <h2>The newsroom is between stories</h2>
+                            <p>Give the agents a topic. They will scout the web when needed, debate an outline, write the sections together, and draw only what helps.</p>
                         </div>
                     </div>
-                    <div id="errorBox" class="error-box"></div>
+                    <div id="errorBox" class="error-box" role="alert"></div>
                     <article id="article" class="article"></article>
                 </div>
             </section>
         </section>
+
+        <footer class="footer">
+            <div class="footer-stack" aria-label="Technology stack"><span>LangGraph</span><span>FastAPI</span><span>OpenRouter</span><span>Vercel Blob</span></div>
+            <span class="signature">Built by Subramanian, supervised by tiny robots.</span>
+        </footer>
     </main>
 
     <script>
         const form = document.getElementById("writerForm");
         const topicInput = document.getElementById("topic");
+        const charCount = document.getElementById("charCount");
         const generateButton = document.getElementById("generateButton");
         const buttonText = document.getElementById("buttonText");
         const buttonIcon = document.getElementById("buttonIcon");
@@ -697,12 +847,16 @@
         const errorBox = document.getElementById("errorBox");
         const downloadLink = document.getElementById("downloadLink");
         const resultTitle = document.getElementById("resultTitle");
+        const resultPanel = document.getElementById("resultPanel");
         const steps = [...document.querySelectorAll(".step")];
         let progressTimer;
+
+        topicInput.addEventListener("input", () => { charCount.textContent = topicInput.value.length; });
 
         document.querySelectorAll(".chip").forEach((chip) => {
             chip.addEventListener("click", () => {
                 topicInput.value = chip.dataset.topic;
+                charCount.textContent = topicInput.value.length;
                 topicInput.focus();
             });
         });
@@ -755,10 +909,10 @@
             const lines = markdown.replace(/\r/g, "").split("\n");
             const html = [];
             let inCode = false;
-            let inList = false;
+            let listType = null;
 
             const closeList = () => {
-                if (inList) { html.push("</ul>"); inList = false; }
+                if (listType) { html.push(`</${listType}>`); listType = null; }
             };
 
             for (let index = 0; index < lines.length; index += 1) {
@@ -787,10 +941,14 @@
                 if (line.startsWith("### ")) { closeList(); html.push(`<h3>${inlineMarkdown(line.slice(4))}</h3>`); continue; }
                 if (line.startsWith("## ")) { closeList(); html.push(`<h2>${inlineMarkdown(line.slice(3))}</h2>`); continue; }
                 if (line.startsWith("# ")) { closeList(); html.push(`<h1>${inlineMarkdown(line.slice(2))}</h1>`); continue; }
+                if (line.startsWith("> ")) { closeList(); html.push(`<blockquote>${inlineMarkdown(line.slice(2))}</blockquote>`); continue; }
 
-                if (/^[-*] /.test(line)) {
-                    if (!inList) { html.push("<ul>"); inList = true; }
-                    html.push(`<li>${inlineMarkdown(line.slice(2))}</li>`);
+                const unordered = line.match(/^[-*] (.+)/);
+                const ordered = line.match(/^\d+\. (.+)/);
+                if (unordered || ordered) {
+                    const nextType = ordered ? "ol" : "ul";
+                    if (listType !== nextType) { closeList(); html.push(`<${nextType}>`); listType = nextType; }
+                    html.push(`<li>${inlineMarkdown((ordered || unordered)[1])}</li>`);
                     continue;
                 }
 
@@ -808,15 +966,18 @@
             if (!topic) return;
 
             generateButton.disabled = true;
-            buttonText.textContent = "Agent running";
-            buttonIcon.innerHTML = '<span class="spinner" aria-hidden="true"></span>';
+            resultPanel.setAttribute("aria-busy", "true");
+            buttonText.textContent = "The newsroom is buzzing";
+            buttonIcon.className = "spinner";
+            buttonIcon.textContent = "";
             errorBox.style.display = "none";
             article.style.display = "none";
             emptyState.style.display = "grid";
-            emptyState.querySelector("h2").textContent = "Building your article";
-            emptyState.querySelector("p").textContent = "The agent is researching, drafting sections, and preparing visuals. This can take a few minutes.";
+            emptyState.querySelector("h2").textContent = "Your story is on the desk";
+            emptyState.querySelector("p").textContent = "The crew is researching, drafting sections in parallel, and preparing useful visuals. This can take a few minutes.";
+            emptyState.querySelector(".speech-bubble").textContent = "Shh… tiny writers at work.";
             downloadLink.style.display = "none";
-            resultTitle.textContent = "generating…";
+            resultTitle.textContent = "writing-in-progress.md";
             startProgress();
 
             try {
@@ -826,27 +987,32 @@
                     body: JSON.stringify({ topic }),
                 });
                 const data = await response.json();
-                if (!response.ok) throw new Error(data.detail || "The workflow could not complete.");
+                if (!response.ok) throw new Error(data.detail || "The newsroom could not finish this story.");
 
                 finishProgress();
                 article.innerHTML = renderMarkdown(data.markdown);
                 article.style.display = "block";
                 emptyState.style.display = "none";
-                resultTitle.textContent = data.output_url ? decodeURIComponent(data.output_url.split("/").pop()) : "article-preview.md";
                 if (data.output_url) {
+                    const outputUrl = new URL(data.output_url);
+                    resultTitle.textContent = decodeURIComponent(outputUrl.pathname.split("/").pop());
                     downloadLink.href = data.output_url;
                     downloadLink.style.display = "inline-flex";
+                } else {
+                    resultTitle.textContent = "article-preview.md";
                 }
             } catch (error) {
                 resetSteps();
                 emptyState.style.display = "none";
                 errorBox.textContent = error.message;
                 errorBox.style.display = "block";
-                resultTitle.textContent = "generation-failed";
+                resultTitle.textContent = "story-needs-a-rewrite.md";
             } finally {
+                resultPanel.setAttribute("aria-busy", "false");
                 generateButton.disabled = false;
-                buttonText.textContent = "Wake up the agents";
-                buttonIcon.innerHTML = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 3l1.7 4.3L18 9l-4.3 1.7L12 15l-1.7-4.3L6 9l4.3-1.7L12 3zM19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15z"></path></svg>';
+                buttonText.textContent = "Send it to the newsroom";
+                buttonIcon.className = "button-spark";
+                buttonIcon.textContent = "✦";
             }
         });
     </script>

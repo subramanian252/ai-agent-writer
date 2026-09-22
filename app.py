@@ -11,7 +11,7 @@ from backend import generate_blog
 
 BASE_DIR = Path(__file__).resolve().parent
 
-app = FastAPI(title="Agent Writer")
+app = FastAPI(title="LazyWriter")
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
 
