@@ -4,6 +4,7 @@ import os
 import re
 from pathlib import Path
 from typing import Annotated, Literal, Optional, TypedDict
+from uuid import uuid4
 
 import requests
 from dotenv import load_dotenv
@@ -14,14 +15,11 @@ from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Send
 from pydantic import BaseModel, Field
+from vercel.blob import BlobClient
 
 load_dotenv()
 
-PROJECT_ROOT = Path(__file__).resolve().parent
-OUTPUT_DIR = PROJECT_ROOT / "outputs"
-IMAGES_DIR = PROJECT_ROOT / "images"
-OUTPUT_DIR.mkdir(exist_ok=True)
-IMAGES_DIR.mkdir(exist_ok=True)
+blob_client = BlobClient()
 
 llm = ChatOpenAI(
     model="gpt-4o-mini",
@@ -100,7 +98,8 @@ class State(TypedDict, total=False):
     md_with_placeholders: str
     image_specs: list[dict]
     final: str
-    output_path: str
+    output_url: str
+    generation_id: str
 
 
 ROUTER_SYSTEM = """You route a technical blog-writing request.
@@ -255,15 +254,8 @@ def insert_missing_placeholders(md: str, image_specs: list[dict]) -> str:
 
 
 def safe_filename(title: str) -> str:
-    return re.sub(r'[<>:"/\\|?*]', "-", title).strip(" .")
-
-
-def save_markdown(plan: Plan, markdown: str) -> Path:
-    if not markdown.strip():
-        raise ValueError("Markdown content is empty before saving")
-    output_path = OUTPUT_DIR / f"{safe_filename(plan.blog_title)}.md"
-    output_path.write_text(markdown, encoding="utf-8")
-    return output_path
+    filename = re.sub(r"[^a-zA-Z0-9._-]+", "-", title).strip("-._").lower()
+    return filename[:100] or "article"
 
 
 def _openrouter_generate_image_bytes(prompt: str) -> bytes:
@@ -276,13 +268,47 @@ def _openrouter_generate_image_bytes(prompt: str) -> bytes:
         json={
             "model": "bytedance-seed/seedream-4.5",
             "prompt": prompt,
-            "resolution": "1K",
+            "resolution": "2K",
         },
         timeout=120,
     )
     if not response.ok:
         raise RuntimeError(f"OpenRouter image error {response.status_code}: {response.text}")
     return base64.b64decode(response.json()["data"][0]["b64_json"])
+
+CONTENT_TYPES = {
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".webp": "image/webp",
+}
+
+
+def detect_image_type(image_bytes: bytes, filename: str) -> tuple[str, str]:
+    if image_bytes.startswith(b"\x89PNG\r\n\x1a\n"):
+        return ".png", "image/png"
+    if image_bytes.startswith(b"\xff\xd8\xff"):
+        return ".jpg", "image/jpeg"
+    if image_bytes.startswith(b"RIFF") and image_bytes[8:12] == b"WEBP":
+        return ".webp", "image/webp"
+
+    suffix = Path(filename).suffix.lower()
+    suffix = suffix if suffix in CONTENT_TYPES else ".png"
+    return suffix, CONTENT_TYPES[suffix]
+
+
+def upload_image(image_bytes: bytes, filename: str, generation_id: str) -> str:
+    suffix, content_type = detect_image_type(image_bytes, filename)
+
+    blob = blob_client.put(
+        f"articles/{generation_id}/{uuid4().hex}{suffix}",
+        image_bytes,
+        access="public",
+        content_type=content_type,
+        cache_control_max_age=31536000,
+    )
+
+    return blob.url
 
 
 def generate_and_place_images(state: State) -> dict:
@@ -292,25 +318,36 @@ def generate_and_place_images(state: State) -> dict:
     markdown = insert_missing_placeholders(markdown, image_specs)
 
     for spec in image_specs:
-        image_path = IMAGES_DIR / spec["filename"]
-        if not image_path.exists():
-            try:
-                image_path.write_bytes(_openrouter_generate_image_bytes(spec["prompt"]))
-            except Exception as error:
-                failure = (
-                    f"> **[IMAGE GENERATION FAILED]** {spec.get('caption', '')}\n>\n"
-                    f"> **Error:** {error}\n"
-                )
-                markdown = markdown.replace(spec["placeholder"], failure)
-                continue
+        try:
+            image_bytes = _openrouter_generate_image_bytes(spec["prompt"])
+            image_url = upload_image(image_bytes, spec["filename"], state["generation_id"])
+        except Exception as error:
+            failure = (
+                f"> **[IMAGE GENERATION FAILED]** {spec.get('caption', '')}\n>\n"
+                f"> **Error:** {error}\n"
+            )
+            markdown = markdown.replace(spec["placeholder"], failure)
+            continue
+
         image_markdown = (
-            f"![{spec['alt']}](../images/{spec['filename']})\n"
+            f"![{spec['alt']}]({image_url})\n"
             f"*{spec['caption']}*"
         )
         markdown = markdown.replace(spec["placeholder"], image_markdown)
 
-    output_path = save_markdown(plan, markdown)
-    return {"final": markdown, "output_path": str(output_path)}
+    if not markdown.strip():
+        raise ValueError("Markdown content is empty before upload")
+
+    article_filename = f"{safe_filename(plan.blog_title)}.md"
+    article_blob = blob_client.put(
+        f"articles/{state['generation_id']}/{article_filename}",
+        markdown.encode("utf-8"),
+        access="public",
+        content_type="text/markdown; charset=utf-8",
+        cache_control_max_age=3600,
+    )
+
+    return {"final": markdown, "output_url": article_blob.download_url}
 
 
 def build_checkpointer():
@@ -367,6 +404,6 @@ workflow = build_workflow()
 
 def generate_blog(topic: str, thread_id: str) -> dict:
     return workflow.invoke(
-        {"topic": topic, "sections": []},
+        {"topic": topic, "sections": [], "generation_id": thread_id},
         config={"configurable": {"thread_id": thread_id}},
     )

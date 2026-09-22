@@ -3,19 +3,16 @@ from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 from starlette.concurrency import run_in_threadpool
 
-from backend import IMAGES_DIR, OUTPUT_DIR, generate_blog
+from backend import generate_blog
 
 BASE_DIR = Path(__file__).resolve().parent
 
 app = FastAPI(title="Agent Writer")
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
-app.mount("/images", StaticFiles(directory=IMAGES_DIR), name="images")
-app.mount("/outputs", StaticFiles(directory=OUTPUT_DIR), name="outputs")
 
 
 class GenerateRequest(BaseModel):
@@ -41,15 +38,8 @@ async def generate(request: GenerateRequest):
     except Exception as error:
         raise HTTPException(status_code=500, detail=str(error)) from error
 
-    output_path = result.get("output_path")
-    output_url = f"/outputs/{Path(output_path).name}" if output_path else None
-
     return {
         "markdown": result.get("final", ""),
-        "output_url": output_url,
+        "output_url": result.get("output_url"),
         "thread_id": thread_id,
     }
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("app:app", host="0.0.0.0", port=8001, reload=True)

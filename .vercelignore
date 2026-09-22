@@ -1,0 +1,12 @@
+.git/
+.venv/
+__pycache__/
+notebooks/
+images/
+outputs/
+src/
+*.ipynb
+*.pyc
+.env
+.env.*
+!.env.example

@@ -23,6 +23,13 @@ env/
 /uploads/
 /faiss/
 
+# Generated articles and images are stored in Vercel Blob
+/images/
+/outputs/
+
+# Local Vercel project metadata
+/.vercel/
+
 # SQLite databases and their journal / write-ahead log files
 # memory.py can also create checkpointer.db outside data/
 *.db
